@@ -1,0 +1,811 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>HydroHabit - Test Notifikasi 1 Menit</title>
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="theme-color" content="#3B82F6">
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+        }
+
+        body {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 16px;
+        }
+
+        .container {
+            max-width: 400px;
+            width: 100%;
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(10px);
+            border-radius: 32px;
+            padding: 24px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 24px;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: bold;
+        }
+
+        .streak {
+            background: linear-gradient(135deg, #f6b868, #f88e6d);
+            color: white;
+            padding: 8px 16px;
+            border-radius: 30px;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            box-shadow: 0 4px 15px rgba(246, 184, 104, 0.3);
+        }
+
+        /* Timer Display */
+        .timer-card {
+            background: linear-gradient(135deg, #1e1e2f, #2d2d44);
+            border-radius: 24px;
+            padding: 20px;
+            color: white;
+            margin-bottom: 24px;
+            text-align: center;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.4);
+        }
+
+        .timer-label {
+            font-size: 14px;
+            opacity: 0.8;
+            margin-bottom: 8px;
+        }
+
+        .timer-value {
+            font-size: 48px;
+            font-weight: bold;
+            font-family: monospace;
+            letter-spacing: 4px;
+            color: #f6b868;
+            text-shadow: 0 0 10px rgba(246, 184, 104, 0.5);
+        }
+
+        .timer-note {
+            font-size: 12px;
+            opacity: 0.6;
+            margin-top: 8px;
+        }
+
+        /* Progress Card */
+        .progress-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border-radius: 24px;
+            padding: 20px;
+            color: white;
+            margin-bottom: 24px;
+            box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+        }
+
+        .progress-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 16px;
+        }
+
+        .level {
+            background: rgba(255,255,255,0.2);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 14px;
+        }
+
+        .day {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .progress-bar {
+            height: 12px;
+            background: rgba(255,255,255,0.2);
+            border-radius: 30px;
+            overflow: hidden;
+            margin: 12px 0;
+        }
+
+        .progress-fill {
+            height: 100%;
+            width: 45%;
+            background: linear-gradient(90deg, #f6b868, #f88e6d);
+            border-radius: 30px;
+            transition: width 0.3s ease;
+        }
+
+        .xp-text {
+            text-align: right;
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* Today's Mission */
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #333;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .mission-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .mission-item {
+            background: white;
+            border: 2px solid #e5e7eb;
+            border-radius: 16px;
+            padding: 16px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+        }
+
+        .mission-item.completed {
+            background: #f0fdf4;
+            border-color: #22c55e;
+        }
+
+        .mission-time {
+            background: #f3f4f6;
+            padding: 8px;
+            border-radius: 12px;
+            font-size: 14px;
+            font-weight: 600;
+            color: #4b5563;
+            min-width: 60px;
+            text-align: center;
+        }
+
+        .mission-text {
+            flex: 1;
+            font-weight: 500;
+        }
+
+        .mission-item.completed .mission-text {
+            text-decoration: line-through;
+            color: #9ca3af;
+        }
+
+        .check-box {
+            width: 24px;
+            height: 24px;
+            border: 2px solid #d1d5db;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .mission-item.completed .check-box {
+            background: #22c55e;
+            border-color: #22c55e;
+        }
+
+        /* Stats Grid */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 16px;
+            padding: 16px;
+            text-align: center;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #f3f4f6;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+            margin: 4px 0;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #6b7280;
+        }
+
+        /* Button Controls */
+        .button-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+
+        .btn {
+            padding: 16px;
+            border: none;
+            border-radius: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-size: 16px;
+        }
+
+        .btn:active {
+            transform: scale(0.95);
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #e5e7eb;
+            color: #4b5563;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+        }
+
+        .btn-warning {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: white;
+        }
+
+        /* Status Card */
+        .status-card {
+            background: #f3f4f6;
+            border-radius: 16px;
+            padding: 16px;
+            margin-bottom: 24px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 8px;
+        }
+
+        .status-label {
+            color: #6b7280;
+        }
+
+        .status-value {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .green-text {
+            color: #10b981;
+        }
+
+        /* Bottom Navigation */
+        .bottom-nav {
+            display: flex;
+            justify-content: space-around;
+            padding: 12px 0;
+            border-top: 1px solid #e5e7eb;
+            margin-top: 8px;
+        }
+
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            color: #9ca3af;
+            cursor: pointer;
+        }
+
+        .nav-item.active {
+            color: #667eea;
+        }
+
+        .nav-icon {
+            font-size: 24px;
+        }
+
+        .nav-label {
+            font-size: 12px;
+        }
+
+        /* Modal Notifikasi */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal.show {
+            display: flex;
+        }
+
+        .modal-content {
+            background: white;
+            border-radius: 32px;
+            padding: 24px;
+            width: 90%;
+            max-width: 320px;
+            text-align: center;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from {
+                transform: translateY(50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .modal-title {
+            font-size: 24px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: #333;
+        }
+
+        .modal-text {
+            color: #666;
+            margin-bottom: 24px;
+        }
+
+        .modal-buttons {
+            display: flex;
+            gap: 12px;
+        }
+
+        .modal-btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .modal-btn.primary {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+        }
+
+        .modal-btn.secondary {
+            background: #f3f4f6;
+            color: #333;
+        }
+
+        .modal-btn:active {
+            transform: scale(0.95);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <h1>HydroHabit</h1>
+            <div class="streak">
+                <span>🔥</span>
+                <span id="streakCount">3</span>
+            </div>
+        </div>
+
+        <!-- TIMER NOTIFIKASI (1 MENIT) -->
+        <div class="timer-card">
+            <div class="timer-label">⏰ NOTIFIKASI BERIKUTNYA</div>
+            <div class="timer-value" id="countdownTimer">01:00</div>
+            <div class="timer-note">Test mode: notifikasi setiap 1 menit</div>
+        </div>
+
+        <!-- Progress Card -->
+        <div class="progress-card">
+            <div class="progress-header">
+                <span class="level">Level 2 · Hydration Rookie</span>
+                <span class="day">Hari ke-3 dari 30</span>
+            </div>
+            <div class="progress-bar">
+                <div class="progress-fill" id="xpProgress" style="width: 45%"></div>
+            </div>
+            <div class="xp-text">
+                <span id="currentXp">150</span>/<span id="maxXp">200</span> XP
+            </div>
+        </div>
+
+        <!-- Status Notifikasi -->
+        <div class="status-card">
+            <div class="status-item">
+                <span class="status-label">Status Notifikasi:</span>
+                <span class="status-value" id="notifStatus">⏳ Meminta izin...</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Mode:</span>
+                <span class="status-value green-text">⚡ Testing (1 menit)</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Notifikasi diterima:</span>
+                <span class="status-value" id="notifCounter">0</span>
+            </div>
+        </div>
+
+        <!-- Tombol Kontrol -->
+        <div class="button-grid">
+            <button class="btn btn-primary" onclick="testNotification()">
+                🔔 Test Manual
+            </button>
+            <button class="btn btn-success" onclick="resetCounter()">
+                🔄 Reset Counter
+            </button>
+            <button class="btn btn-warning" onclick="setMode('test')">
+                ⚡ Mode Test (1 menit)
+            </button>
+            <button class="btn btn-secondary" onclick="setMode('production')">
+                ⏰ Mode Normal (2 jam)
+            </button>
+        </div>
+
+        <!-- Today's Mission -->
+        <div class="section-title">
+            <span>💧</span> Today's Mission
+            <span style="margin-left: auto; background: #e5e7eb; padding: 4px 12px; border-radius: 20px; font-size: 14px;" id="completedCount">3/6</span>
+        </div>
+
+        <div class="mission-list" id="missionList">
+            <!-- Akan diisi oleh JavaScript -->
+        </div>
+
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div>📊</div>
+                <div class="stat-value" id="daysDone">3</div>
+                <div class="stat-label">Days Done</div>
+            </div>
+            <div class="stat-card">
+                <div>🔥</div>
+                <div class="stat-value" id="streakStats">3</div>
+                <div class="stat-label">Streak</div>
+            </div>
+            <div class="stat-card">
+                <div>🏆</div>
+                <div class="stat-value" id="totalXp">150</div>
+                <div class="stat-label">Total XP</div>
+            </div>
+        </div>
+
+        <!-- Bottom Navigation -->
+        <div class="bottom-nav">
+            <div class="nav-item active" onclick="switchTab('home')">
+                <span class="nav-icon">💧</span>
+                <span class="nav-label">Home</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('progress')">
+                <span class="nav-icon">📅</span>
+                <span class="nav-label">Progress</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('badges')">
+                <span class="nav-icon">🏆</span>
+                <span class="nav-label">Badges</span>
+            </div>
+            <div class="nav-item" onclick="switchTab('profile')">
+                <span class="nav-icon">👤</span>
+                <span class="nav-label">Profile</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Notifikasi -->
+    <div class="modal" id="notificationModal">
+        <div class="modal-content">
+            <div class="modal-icon">💧</div>
+            <h2 class="modal-title">Waktunya Minum!</h2>
+            <p class="modal-text" id="modalMessage">Sudah 1 menit sejak terakhir minum. Ayo minum air!</p>
+            <div class="modal-buttons">
+                <button class="modal-btn secondary" onclick="closeModal()">Nanti</button>
+                <button class="modal-btn primary" onclick="markAsDrunk()">Sudah Minum</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data missions
+        let missions = [
+            { id: 1, time: '08:00', text: 'Minum 1 gelas air', completed: true },
+            { id: 2, time: '10:00', text: 'Minum 1 gelas air', completed: true },
+            { id: 3, time: '12:00', text: 'Minum 1 gelas air', completed: false },
+            { id: 4, time: '14:00', text: 'Minum 1 gelas air', completed: false },
+            { id: 5, time: '16:00', text: 'Minum 1 gelas air', completed: false },
+            { id: 6, time: '18:00', text: 'Minum 1 gelas air', completed: false }
+        ];
+
+        // Data progress
+        let progress = {
+            streak: 3,
+            level: 2,
+            xp: 150,
+            maxXp: 200,
+            day: 3,
+            daysDone: 3
+        };
+
+        // Variabel notifikasi
+        let notifCounter = 0;
+        let notifInterval = null;
+        let countdownInterval = null;
+        let secondsLeft = 60; // 1 menit
+        let mode = 'test'; // 'test' = 1 menit, 'production' = 2 jam
+
+        // Render missions
+        function renderMissions() {
+            const missionList = document.getElementById('missionList');
+            const completedCount = missions.filter(m => m.completed).length;
+            
+            missionList.innerHTML = missions.map(mission => `
+                <div class="mission-item ${mission.completed ? 'completed' : ''}" onclick="toggleMission(${mission.id})">
+                    <div class="mission-time">${mission.time}</div>
+                    <div class="mission-text">${mission.text}</div>
+                    <div class="check-box">${mission.completed ? '✓' : ''}</div>
+                </div>
+            `).join('');
+
+            document.getElementById('completedCount').textContent = `${completedCount}/6`;
+        }
+
+        // Toggle mission
+        function toggleMission(id) {
+            missions = missions.map(m => 
+                m.id === id ? { ...m, completed: !m.completed } : m
+            );
+            
+            if (missions.find(m => m.id === id).completed) {
+                progress.xp += 10;
+                updateProgress();
+            }
+            
+            renderMissions();
+            checkCompletion();
+        }
+
+        // Update progress
+        function updateProgress() {
+            document.getElementById('currentXp').textContent = progress.xp;
+            document.getElementById('totalXp').textContent = progress.xp;
+            
+            const percentage = (progress.xp / progress.maxXp) * 100;
+            document.getElementById('xpProgress').style.width = percentage + '%';
+        }
+
+        // Cek streak
+        function checkCompletion() {
+            const allCompleted = missions.every(m => m.completed);
+            if (allCompleted) {
+                progress.streak++;
+                document.getElementById('streakCount').textContent = progress.streak;
+                document.getElementById('streakStats').textContent = progress.streak;
+            }
+        }
+
+        // UPDATE NOTIFIKASI SETIAP 1 MENIT
+        function startNotifications() {
+            // Hapus interval lama
+            if (notifInterval) clearInterval(notifInterval);
+            if (countdownInterval) clearInterval(countdownInterval);
+
+            // Set interval berdasarkan mode
+            let intervalTime = mode === 'test' ? 60000 : 7200000; // 1 menit atau 2 jam
+            secondsLeft = mode === 'test' ? 60 : 7200;
+            
+            updateCountdown();
+            
+            // Countdown timer
+            countdownInterval = setInterval(() => {
+                secondsLeft--;
+                if (secondsLeft < 0) {
+                    secondsLeft = mode === 'test' ? 60 : 7200;
+                }
+                updateCountdown();
+            }, 1000);
+
+            // Notifikasi interval
+            notifInterval = setInterval(() => {
+                showNotification(
+                    '💧 Waktunya Minum!',
+                    `Mode ${mode === 'test' ? 'Testing (1 menit)' : 'Normal (2 jam)'} - Ayo minum air!`
+                );
+            }, intervalTime);
+
+            // Update status
+            document.getElementById('notifStatus').innerHTML = '✅ Aktif (setiap ' + 
+                (mode === 'test' ? '1 menit' : '2 jam') + ')';
+        }
+
+        // Update countdown display
+        function updateCountdown() {
+            const minutes = Math.floor(secondsLeft / 60);
+            const seconds = secondsLeft % 60;
+            document.getElementById('countdownTimer').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+        }
+
+        // Ganti mode
+        function setMode(newMode) {
+            mode = newMode;
+            startNotifications();
+            
+            let message = mode === 'test' ? 
+                'Mode TEST: Notifikasi setiap 1 MENIT' : 
+                'Mode NORMAL: Notifikasi setiap 2 JAM';
+            
+            alert('✅ ' + message);
+        }
+
+        // Request izin notifikasi
+        async function requestNotificationPermission() {
+            if (!('Notification' in window)) {
+                document.getElementById('notifStatus').innerHTML = '❌ Browser tidak mendukung';
+                return false;
+            }
+
+            const permission = await Notification.requestPermission();
+            const status = permission === 'granted' ? '✅ Diizinkan' : '❌ Ditolak';
+            document.getElementById('notifStatus').innerHTML = status;
+            
+            if (permission === 'granted') {
+                startNotifications();
+            }
+            
+            return permission === 'granted';
+        }
+
+        // Tampilkan notifikasi
+        function showNotification(title, message) {
+            notifCounter++;
+            document.getElementById('notifCounter').textContent = notifCounter;
+            
+            // Tampilkan modal
+            document.getElementById('modalMessage').textContent = message;
+            document.getElementById('notificationModal').classList.add('show');
+            
+            // Tampilkan notifikasi system
+            if (Notification.permission === 'granted') {
+                new Notification(title, {
+                    body: message,
+                    icon: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%233B82F6"/><text x="50" y="70" font-size="50" text-anchor="middle" fill="white">💧</text></svg>',
+                    badge: 'data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><circle cx="50" cy="50" r="45" fill="%233B82F6"/><text x="50" y="70" font-size="50" text-anchor="middle" fill="white">💧</text></svg>',
+                    vibrate: [200, 100, 200],
+                    tag: 'water-reminder',
+                    renotify: true
+                });
+            }
+        }
+
+        // Test notifikasi manual
+        function testNotification() {
+            showNotification('🔔 Test Manual', 'Ini adalah notifikasi test!');
+        }
+
+        // Reset counter
+        function resetCounter() {
+            notifCounter = 0;
+            document.getElementById('notifCounter').textContent = '0';
+        }
+
+        // Tutup modal
+        function closeModal() {
+            document.getElementById('notificationModal').classList.remove('show');
+        }
+
+        // Tandai sudah minum
+        function markAsDrunk() {
+            const now = new Date();
+            const currentHour = now.getHours();
+            
+            const missionToComplete = missions.find(m => {
+                const hour = parseInt(m.time.split(':')[0]);
+                return hour <= currentHour && !m.completed;
+            });
+            
+            if (missionToComplete) {
+                toggleMission(missionToComplete.id);
+            } else {
+                alert('✅ Semua mission sudah complete untuk jam ini!');
+            }
+            
+            closeModal();
+        }
+
+        // Switch tab
+        function switchTab(tab) {
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => item.classList.remove('active'));
+            
+            if (tab === 'home') navItems[0].classList.add('active');
+            if (tab === 'progress') navItems[1].classList.add('active');
+            if (tab === 'badges') navItems[2].classList.add('active');
+            if (tab === 'profile') navItems[3].classList.add('active');
+            
+            alert('Fitur ' + tab + ' akan segera hadir!');
+        }
+
+        // PWA Install handler
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+        });
+
+        // Inisialisasi
+        window.onload = async () => {
+            renderMissions();
+            updateProgress();
+            
+            // Minta izin notifikasi
+            await requestNotificationPermission();
+            
+            // Update stats
+            document.getElementById('daysDone').textContent = progress.daysDone;
+            document.getElementById('streakStats').textContent = progress.streak;
+            
+            // Info
+            console.log('HydroHabit siap! Mode test 1 menit');
+        };
+    </script>
+</body>
+</html>

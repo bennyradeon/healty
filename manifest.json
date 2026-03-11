@@ -1,0 +1,16 @@
+{
+  "name": "HydroHabit - Pengingat Minum",
+  "short_name": "HydroHabit",
+  "description": "Pengingat minum air setiap 2 jam",
+  "start_url": "index.html",
+  "display": "standalone",
+  "background_color": "#667eea",
+  "theme_color": "#667eea",
+  "icons": [
+    {
+      "src": "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><circle cx='50' cy='50' r='45' fill='%233B82F6'/><text x='50' y='70' font-size='50' text-anchor='middle' fill='white'>💧</text></svg>",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    }
+  ]
+}
